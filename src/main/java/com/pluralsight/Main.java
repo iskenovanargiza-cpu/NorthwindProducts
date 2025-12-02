@@ -16,22 +16,56 @@ public class Main {
         String url = "jdbc:mysql://127.0.0.1:3306/northwind";
         String user = "root";
         String password = "yearup2025";
-
-        System.out.println("What do you want to do?\n1) Display all products\n2) Display all customers\n0) Exit\nSelect an option:");
-        int userChoice = scanner.nextInt();
-        scanner.nextLine();
-
-        String query1 = "SELECT * FROM Products";
-        String query2 = "SELECT * FROM Customers";
-
+        
 
         try {
             connection = DriverManager.getConnection(url,user,password);
-            if (userChoice == 1) {
-            statement = connection.prepareStatement(query1);
-            System.out.println();
+            System.out.println("What do you want to do?\n1) Display all products\n2) Display all customers\n0) Exit\nSelect an option:");
+            int userChoice = scanner.nextInt();
+            scanner.nextLine();
 
-        results = statement.executeQuery();
+            switch(userChoice) {
+                case 1 -> displayProducts(connection);
+                case 2 -> displayCustomers(connection);
+                case 0 ->
+                        System.exit(0);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+
+            if (results != null) {
+                try {
+                    results.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (statement != null){
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static void displayProducts(Connection connection) throws SQLException {
+        String productQuery = "SELECT * FROM Products";
+        PreparedStatement statement = connection.prepareStatement(productQuery);
+        System.out.println();
+
+        ResultSet results = statement.executeQuery();
 
         while (results.next()) {
             int productID = results.getInt("ProductID");
@@ -40,48 +74,21 @@ public class Main {
             int unitsInStock = results.getInt("UnitsInStock");
             System.out.printf("Product ID: %s\nProduct Name: %s\nPrice: %s\nStock:%s\n--------------------\n",productID,productName,unitPrice,unitsInStock);
         }
-            }
-        else if (userChoice == 2) {
-                statement = connection.prepareStatement(query2);
-                System.out.println();
-                results = statement.executeQuery();
+    }
 
-            while (results.next()) {
-                    String contactName = results.getString("ContactName");
-                    String companyName = results.getString("CompanyName");
-                    String city = results.getString("City");
-                    String country = results.getString("Country");
-                    String phoneNumber = results.getString("Phone");
-                    System.out.printf("Contact Name: %s\nCompany Name: %s\nCity: %s\nCountry:%s\nPhone: %s\n--------------------\n",contactName,companyName,city,country,phoneNumber);
-            }
-        } else {
-            System.exit(0);
-            }
+    public static void displayCustomers(Connection connection) throws SQLException {
+        String customerQuery = "SELECT * FROM Customers";
+        PreparedStatement statement = connection.prepareStatement(customerQuery);
+        System.out.println();
+        ResultSet results = statement.executeQuery();
 
-    } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            if (results != null) {
-                try {
-                    results.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (statement != null){
-                try {
-                    statement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
+        while (results.next()) {
+            String contactName = results.getString("ContactName");
+            String companyName = results.getString("CompanyName");
+            String city = results.getString("City");
+            String country = results.getString("Country");
+            String phoneNumber = results.getString("Phone");
+            System.out.printf("Contact Name: %s\nCompany Name: %s\nCity: %s\nCountry:%s\nPhone: %s\n--------------------\n",contactName,companyName,city,country,phoneNumber);
         }
     }
 }
