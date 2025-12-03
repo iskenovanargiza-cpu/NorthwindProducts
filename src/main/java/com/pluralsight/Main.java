@@ -1,4 +1,6 @@
 package com.pluralsight;
+import org.apache.commons.dbcp2.BasicDataSource;
+
 import java.sql.*;
 import java.util.Scanner;
 
@@ -14,10 +16,15 @@ public class Main {
         String url = "jdbc:mysql://127.0.0.1:3306/northwind";
         String user = "root";
         String password = "yearup2025";
-        
+
+        BasicDataSource dataSource = new BasicDataSource();
+        dataSource.setUrl(url);
+        dataSource.setUsername(user);
+        dataSource.setPassword(password);
 
         try {
-            connection = DriverManager.getConnection(url,user,password);
+
+            connection = dataSource.getConnection();
             System.out.println("What do you want to do?\n1) Display all products\n2) Display all customers\n3) Display all categories\n0) Exit\nSelect an option:");
             int userChoice = scanner.nextInt();
             scanner.nextLine();
@@ -78,53 +85,54 @@ public class Main {
 
     public static void displayCustomers(Connection connection) throws SQLException {
         String customerQuery = "SELECT * FROM Customers";
-        PreparedStatement statement = connection.prepareStatement(customerQuery);
-        System.out.println();
-        ResultSet results = statement.executeQuery();
+        try (PreparedStatement statement = connection.prepareStatement(customerQuery);
+             ResultSet results = statement.executeQuery()) {
 
-        while (results.next()) {
-            String contactName = results.getString("ContactName");
-            String companyName = results.getString("CompanyName");
-            String city = results.getString("City");
-            String country = results.getString("Country");
-            String phoneNumber = results.getString("Phone");
-            System.out.printf("Contact Name: %s\nCompany Name: %s\nCity: %s\nCountry:%s\nPhone: %s\n--------------------\n",contactName,companyName,city,country,phoneNumber);
+            while (results.next()) {
+                String contactName = results.getString("ContactName");
+                String companyName = results.getString("CompanyName");
+                String city = results.getString("City");
+                String country = results.getString("Country");
+                String phoneNumber = results.getString("Phone");
+                System.out.printf("Contact Name: %s\nCompany Name: %s\nCity: %s\nCountry:%s\nPhone: %s\n--------------------\n", contactName, companyName, city, country, phoneNumber);
+            }
         }
     }
 
-    public static void displayCategories(Connection connection) throws SQLException {
-        PreparedStatement statement;
-        ResultSet results;
+        public static void displayCategories (Connection connection) throws SQLException {
+            PreparedStatement statement;
+            ResultSet results;
 
-        String categoriesQuery = "SELECT * FROM Categories ORDER BY CategoryID";
-        statement = connection.prepareStatement(categoriesQuery);
-        System.out.println();
-        results = statement.executeQuery();
+            String categoriesQuery = "SELECT * FROM Categories ORDER BY CategoryID";
+            statement = connection.prepareStatement(categoriesQuery);
+            System.out.println();
+            results = statement.executeQuery();
 
-        while (results.next()) {
-            int categoryID = results.getInt("CategoryID");
-            String categoryName = results.getString("CategoryName");
-            System.out.printf("Category ID: %s\nCategory Name: %s\n--------------------\n", categoryID, categoryName);
+            while (results.next()) {
+                int categoryID = results.getInt("CategoryID");
+                String categoryName = results.getString("CategoryName");
+                System.out.printf("Category ID: %s\nCategory Name: %s\n--------------------\n", categoryID, categoryName);
 
-        }
+            }
 
-        System.out.println("Please enter category ID number:");
-        int userChoice = scanner.nextInt();
-        scanner.nextLine();
-        String productDisplay = "SELECT * FROM Products WHERE CategoryID = ?";
-        statement = connection.prepareStatement(productDisplay);
-        System.out.println();
-        statement.setInt(1, userChoice);
+            System.out.println("Please enter category ID number:");
+            int userChoice = scanner.nextInt();
+            scanner.nextLine();
+            String productDisplay = "SELECT * FROM Products WHERE CategoryID = ?";
+            statement = connection.prepareStatement(productDisplay);
+            System.out.println();
+            statement.setInt(1, userChoice);
 
-        results = statement.executeQuery();
+            results = statement.executeQuery();
 
-        while (results.next()) {
-            int productID = results.getInt("ProductID");
-            String productName = results.getString("ProductName");
-            double unitPrice = results.getDouble("UnitPrice");
-            int unitsInStock = results.getInt("UnitsInStock");
-            System.out.printf("Product ID: %s\nProduct Name: %s\nPrice: %s\nStock:%s\n--------------------\n",productID,productName,unitPrice,unitsInStock);
+            while (results.next()) {
+                int productID = results.getInt("ProductID");
+                String productName = results.getString("ProductName");
+                double unitPrice = results.getDouble("UnitPrice");
+                int unitsInStock = results.getInt("UnitsInStock");
+                System.out.printf("Product ID: %s\nProduct Name: %s\nPrice: %s\nStock:%s\n--------------------\n", productID, productName, unitPrice, unitsInStock);
+            }
         }
     }
-}
+
 
